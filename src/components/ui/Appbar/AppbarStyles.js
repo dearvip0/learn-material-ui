@@ -1,5 +1,5 @@
 import { makeStyles } from "@material-ui/core/styles";
-const drawerWidth = 240;
+const drawerWidth = 200;
 const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
@@ -37,6 +37,19 @@ const useStyles = makeStyles((theme) => ({
   },
   title: {
     flexGrow: 1,
+  },
+  drawer: {
+    width: drawerWidth,
+    flexShrink: 0,
+  },
+  drawerPaperLeft: {
+    position: "relative",
+    whiteSpace: "nowrap",
+    width: drawerWidth,
+    transition: theme.transitions.create("width", {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
   },
   drawerPaper: {
     position: "relative",

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import clsx from "clsx";
 //core
 import {
@@ -15,6 +15,11 @@ import {
   Fab,
   Menu,
   MenuItem,
+  ListItemText,
+  ListItemIcon,
+  ListItem,
+  Grid,
+  Button,
 } from "@material-ui/core";
 //icon
 import MenuIcon from "@material-ui/icons/Menu";
@@ -28,12 +33,22 @@ import { mainListItems, secondaryListItems } from "../ListItem/mainListItems";
 import ElevationScroll from "../ElevationScroll/ElevationScroll";
 import ScrollTop from "../ScrollTop/ScrollTop";
 import Breadcrumb from "../Breadcrumbs/Breadcrumb";
+import LabelBottomNavigation from "../BottomNavigation/BottomNavigation";
 
 import useStyles from "./AppbarStyles";
+import MyMap from "../Map/Map";
+const center = {
+  location: {
+    latitude: 106.654547,
+    longitude: 10.784328,
+  }
+};
 export default function ElevateAppBar(props) {
   const classes = useStyles();
-  const [open, setOpen] = React.useState(true);
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [state, setState] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+
   const isMenuOpen = Boolean(anchorEl);
   const menuId = "primary-search-account-menu";
   const handleDrawerOpen = () => {
@@ -48,7 +63,6 @@ export default function ElevateAppBar(props) {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-  //   const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
   const renderMenu = (
     <Menu
@@ -62,6 +76,7 @@ export default function ElevateAppBar(props) {
     >
       <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
       <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+      <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
     </Menu>
   );
 
@@ -114,6 +129,7 @@ export default function ElevateAppBar(props) {
             >
               <AccountCircle />
             </IconButton>
+            {renderMenu}
           </Toolbar>
         </AppBar>
       </ElevationScroll>
@@ -134,22 +150,50 @@ export default function ElevateAppBar(props) {
         <Divider />
         <List>{secondaryListItems}</List>
       </Drawer>
+      {/* <Drawer
+        className={classes.drawer}
+        variant="permanent"
+        classes={{
+          paper: classes.drawerPaperLeft,
+        }}
+        anchor="left"
+      >
+        <Divider />
+        <List>
+          {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+            <ListItem button key={text}>
+              <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
+              <ListItemText primary={text} />
+            </ListItem>
+          ))}
+        </List>
+      </Drawer> */}
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <Container fixed>
-          <Breadcrumb />
-        </Container>
         <Container maxWidth="lg" className={classes.container}>
-          <Box my={2}>
-            {[...new Array(100)]
-              .map(
-                () => `Cras mattis consectetur purus sit amet fermentum.
-Cras justo odio, dapibus ac facilisis in, egestas eget quam.
-Morbi leo risus, porta ac consectetur ac, vestibulum at eros.
-Praesent commodo cursus magna, vel scelerisque nisl consectetur et.`
-              )
-              .join("\n")}
-          </Box>
+          <Breadcrumb />
+          <Grid
+            container
+            direction="column-reverse"
+            justify="center"
+            alignItems="stretch"
+          >
+            <MyMap
+              height="80vh"
+              width="100%"
+              center={[center.location.latitude, center.location.longitude]}
+              zoom={12}
+            />
+          </Grid>
+          <Grid
+            container
+            direction="row"
+            justify="center"
+            alignItems="flex-end"
+          >
+
+            <LabelBottomNavigation />
+          </Grid>
         </Container>
         <ScrollTop {...props}>
           <Fab color="secondary" size="small" aria-label="scroll back to top">
