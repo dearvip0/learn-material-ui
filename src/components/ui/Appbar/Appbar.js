@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
+import { useTheme } from "@material-ui/core/styles";
 //core
 import {
   AppBar,
@@ -24,6 +25,7 @@ import {
 //icon
 import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
+import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import NotificationsIcon from "@material-ui/icons/Notifications";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import AccountCircle from "@material-ui/icons/AccountCircle";
@@ -37,17 +39,29 @@ import LabelBottomNavigation from "../BottomNavigation/BottomNavigation";
 
 import useStyles from "./AppbarStyles";
 import MyMap from "../Map/Map";
-const center = {
-  location: {
-    latitude: 106.654547,
-    longitude: 10.784328,
-  }
-};
+import useSWR from "swr";
+
+const fetcher = (...args) =>
+  fetcher(...args).then((response) => response.json());
+
 export default function ElevateAppBar(props) {
   const classes = useStyles();
-  const [state, setState] = useState(0);
+  const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const url =
+    "https://data.police.uk/api/crimes-street/all-crime?lat=52.629729&lng=-1.131592&date=2019-10";
+  const { data, error } = useSWR(url, { fetcher });
+  const [viewport, setViewport] = useState({
+    latitude: 10.78,
+    longitude: 106.654547,
+    width: "100%",
+    height: "80vh",
+    zoom: 12,
+  });
+
+  const mapRef = useRef();
 
   const isMenuOpen = Boolean(anchorEl);
   const menuId = "primary-search-account-menu";
@@ -84,19 +98,18 @@ export default function ElevateAppBar(props) {
     <div className={classes.root}>
       <ElevationScroll {...props}>
         <AppBar
-          position="absolute"
-          className={clsx(classes.appBar, open && classes.appBarShift)}
+          position="fixed"
+          className={clsx(classes.appBar, {
+            [classes.appBarShift]: open,
+          })}
         >
           <Toolbar id="back-to-top-anchor" className={classes.toolbar}>
             <IconButton
-              edge="start"
               color="inherit"
               aria-label="open drawer"
               onClick={handleDrawerOpen}
-              className={clsx(
-                classes.menuButton,
-                open && classes.menuButtonHidden
-              )}
+              edge="start"
+              className={clsx(classes.menuButton, open && classes.hide)}
             >
               <MenuIcon />
             </IconButton>
@@ -134,17 +147,24 @@ export default function ElevateAppBar(props) {
         </AppBar>
       </ElevationScroll>
       <Drawer
-        variant="permanent"
-        classes={{
-          paper: clsx(classes.drawerPaper, !open && classes.drawerPaperClose),
-        }}
+        className={classes.drawer}
+        variant="persistent"
+        anchor="left"
         open={open}
+        classes={{
+          paper: classes.drawerPaper,
+        }}
       >
-        <div className={classes.toolbarIcon}>
+        <div className={classes.drawerHeader}>
           <IconButton onClick={handleDrawerClose}>
-            <ChevronLeftIcon />
+            {theme.direction === "ltr" ? (
+              <ChevronLeftIcon />
+            ) : (
+              <ChevronRightIcon />
+            )}
           </IconButton>
         </div>
+        <Divider />
         <Divider />
         <List>{mainListItems}</List>
         <Divider />
@@ -172,26 +192,28 @@ export default function ElevateAppBar(props) {
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
           <Breadcrumb />
-          <Grid
+          <Box
             container
             direction="column-reverse"
             justify="center"
             alignItems="stretch"
           >
             <MyMap
-              height="80vh"
-              width="100%"
-              center={[center.location.latitude, center.location.longitude]}
-              zoom={12}
+              {...viewport}
+              maxZoom={20}
+              center={[viewport.longitude, viewport.latitude]}
+              onviewportChange={(newViewport) => {
+                setViewport({ ...newViewport });
+              }}
+              ref={mapRef}
             />
-          </Grid>
+          </Box>
           <Grid
             container
             direction="row"
             justify="center"
             alignItems="flex-end"
           >
-
             <LabelBottomNavigation />
           </Grid>
         </Container>
